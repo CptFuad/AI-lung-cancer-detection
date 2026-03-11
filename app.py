@@ -34,7 +34,7 @@ if uploaded_file is not None:
 
 #gradcam function
 
-def make_gradcam_heatmap(img_array, model, last_conv_layer_name):
+def make_gradcam_heatmap(img, model, last_conv_layer_name):
 
     grad_model = tf.keras.models.Model(
         [model.inputs],
