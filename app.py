@@ -12,29 +12,8 @@ class_names=['Normal','Benign', 'Malignant']
 
 uploaded_file=st.file_uploader('Upload the CT Scan Image', type=['jpg', 'png'])
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption='Uploaded CT Scan Image')
 
-    img = image.resize((224,224))
-    img = np.array(img)/255.0
-    img = np.expand_dims(img, axis=0)
-
-    prediction = model.predict(img)
-
-    predicted_class = class_names[np.argmax(prediction)]
-    st.write('Prediction class is: ', predicted_class)
-
-    prob = prediction[0]
-
-    for i in range(len(class_names)):
-        st.write(class_names[i], ':', round(prob[i]*100,2), '%')
-
-
-
-#gradcam function
-
-def make_gradcam_heatmap(img, model, last_conv_layer_name):
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name):
 
     grad_model = tf.keras.models.Model(
         [model.inputs],
@@ -58,14 +37,33 @@ def make_gradcam_heatmap(img, model, last_conv_layer_name):
 
     return heatmap.numpy()
 
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption='Uploaded CT Scan Image')
+
+    img = image.resize((224,224))
+    img = np.array(img)/255.0
+    img = np.expand_dims(img, axis=0)
+
+    prediction = model.predict(img)
+
+    predicted_class = class_names[np.argmax(prediction)]
+    st.write('Prediction class is: ', predicted_class)
+
+    prob = prediction[0]
+
+    for i in range(len(class_names)):
+        st.write(class_names[i], ':', round(prob[i]*100,2), '%')
+
+
 # GradCAM
-heatmap = make_gradcam_heatmap(img, model, "top_conv")
+    heatmap = make_gradcam_heatmap(img, model, "top_conv")
 
-heatmap = cv2.resize(heatmap, (224,224))
-heatmap = np.uint8(255 * heatmap)
+    heatmap = cv2.resize(heatmap, (224,224))
+    heatmap = np.uint8(255 * heatmap)
 
-heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
 
-superimposed_img = heatmap * 0.4 + np.array(image.resize((224,224)))
+    superimposed_img = heatmap * 0.4 + np.array(image.resize((224,224)))
 
-st.image(superimposed_img.astype("uint8"), caption="Heatmap Visualization")
+    st.image(superimposed_img.astype("uint8"), caption="Heatmap Visualization")
